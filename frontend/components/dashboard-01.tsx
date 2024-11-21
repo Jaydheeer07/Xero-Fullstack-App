@@ -9,7 +9,25 @@ import { useTenant } from "@/components/hooks/use-tenant";
 import { useBankTransactions } from "@/components/hooks/use-banktransaction";
 import { useEffect } from 'react';
 import InvoicesPieChart from "@/components/dashboard/invoices-piechart";
-import { UnreconciledStatusCard } from "@/components/dashboard/unreconciled-statuscard"; // Import the new component
+import { UnreconciledStatusCard } from "@/components/dashboard/unreconciled-statuscard";
+import { TotalClientsCard } from "@/components/dashboard/total-clients-card";
+import { AccountReceivablesCard } from "@/components/dashboard/account-receivables-card";
+import { AccountPayablesCard } from "@/components/dashboard/account-payables-card";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 interface Tenant {
   tenantId: string;
@@ -27,34 +45,54 @@ export default function Dashboard({ initialTenants }: { initialTenants: Tenant[]
     }
   }, [initialTenants, selectedTenant, setSelectedTenant]);
 
+  const currentPage = "Dashboard"; // Set the current page here
+
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <TenantDropdown initialTenants={initialTenants} />
-          <UserNav />
-        </nav>
-      </header>
-
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-          {/* Other cards */}
-          <UnreconciledStatusCard selectedTenantId={selectedTenant?.tenantId || null} /> {/* Add the new component here */}
-        </div>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <p>Error: {error.message}</p>
-          ) : (
-            <BankTransactionsTable transactions={transactions} />
-          )}
-          <InvoicesPieChart />
-          {/* Other cards */}
-        </div>
-      </main>
-
-      <ErrorDialog />
-    </div>
+    <SidebarProvider>
+      <AppSidebar initialTenants={initialTenants} currentPage={currentPage} />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="#">
+                  Building Your Application
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="ml-auto">
+            <UserNav />
+          </div>
+        </header>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+            {/* Other cards */}
+            <UnreconciledStatusCard selectedTenantId={selectedTenant?.tenantId || null} />
+            <TotalClientsCard />
+            <AccountReceivablesCard />
+            <AccountPayablesCard />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p>Error: {error.message}</p>
+            ) : (
+              <BankTransactionsTable transactions={transactions} />
+            )}
+            <InvoicesPieChart />
+            {/* Other cards */}
+          </div>
+        </main>
+        <ErrorDialog />
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

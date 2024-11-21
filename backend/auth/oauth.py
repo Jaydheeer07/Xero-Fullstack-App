@@ -32,18 +32,18 @@ api_client = ApiClient(
     pool_threads=1,
 )
 
-
 def create_token_dict(token):
     """Create a complete token dictionary including scope."""
-    return {
+    token_dict = {
         "access_token": token.get("access_token"),
         "token_type": token.get("token_type", "Bearer"),
         "refresh_token": token.get("refresh_token"),
         "expires_in": token.get("expires_in"),
         "expires_at": token.get("expires_at"),
-        "scope": SCOPE,  # Add the scope here
+        "scope": token.get("scope", SCOPE),  # Use the scope from the token if available
     }
-
+    logger.info(f"Created token dict: {token_dict}")  # Add this line
+    return token_dict
 
 @api_client.oauth2_token_getter
 def obtain_xero_oauth2_token():
@@ -56,17 +56,17 @@ def obtain_xero_oauth2_token():
         # Ensure scope is included in the token
         if "scope" not in token_dict:
             token_dict["scope"] = SCOPE
+        logger.info(f"Obtained token: {token_dict}")  # Add this line
         return token_dict
     return None
-
 
 @api_client.oauth2_token_saver
 def store_xero_oauth2_token(token):
     """Store the token in the session."""
     token_dict = token if isinstance(token, dict) else token
     token_dict["scope"] = SCOPE  # Ensure scope is always included
+    logger.info(f"Storing token: {token_dict}")  # Add this line
     app.state.token = token_dict
-
 
 def is_token_expired(token: dict) -> bool:
     """Check if the token is expired or about to expire in the next 60 seconds."""
@@ -74,15 +74,15 @@ def is_token_expired(token: dict) -> bool:
         return True
     return datetime.now().timestamp() >= (token["expires_at"] - 60)
 
-
 async def refresh_token_if_expired():
     """Refresh the token if it's expired."""
     token = obtain_xero_oauth2_token()
 
     if token and is_token_expired(token):
         try:
-            new_token = await oauth.xero.refresh_token(token)
+            new_token = api_client.refresh_oauth2_token(token)
             new_token_dict = create_token_dict(new_token)
+            logger.info(f"Refreshed token: {new_token_dict}")  # Add this line
             store_xero_oauth2_token(new_token_dict)
             return new_token_dict
         except Exception as e:
@@ -90,7 +90,6 @@ async def refresh_token_if_expired():
             store_xero_oauth2_token(None)
             return None
     return token
-
 
 async def require_valid_token(request: Request):
     """Dependency to ensure a valid token exists."""

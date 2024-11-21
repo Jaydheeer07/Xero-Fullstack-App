@@ -1,4 +1,5 @@
 // components/dashboard/banktransactions-table.tsx
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,8 +72,8 @@ export const BankTransactionsTable = ({ transactions }: { transactions: Transact
             </TableRow>
           </TableHeader>
           <TableBody>
-            {slicedTransactions.map((transaction: Transaction) => (
-              <TableRow key={transaction.BankTransactionID}>
+            {slicedTransactions.map((transaction: Transaction, index: number) => (
+              <TableRow key={transaction.BankTransactionID} className={index % 2 === 0 ? "bg-secondary-100" : ""}>
                 <TableCell>{transaction.Reference}</TableCell>
                 <TableCell>${transaction.Total.toFixed(2)}</TableCell>
                 <TableCell>{transaction.Contact.Name}</TableCell>

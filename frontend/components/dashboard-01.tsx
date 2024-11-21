@@ -1,13 +1,13 @@
 // app/components/dashboard-01.tsx
 "use client"; // Ensure this is a client component
 
+import { useEffect } from 'react';
 import { TenantDropdown } from "@/components/dashboard/tenant-dropdown";
 import { UserNav } from "@/components/dashboard/usernav";
 import { ErrorDialog } from "@/components/dashboard/error-dialog";
 import { BankTransactionsTable } from "@/components/dashboard/banktransactions-table";
 import { useTenant } from "@/components/hooks/use-tenant";
 import { useBankTransactions } from "@/components/hooks/use-banktransaction";
-import { useEffect } from 'react';
 import InvoicesPieChart from "@/components/dashboard/invoices-piechart";
 import { UnreconciledStatusCard } from "@/components/dashboard/unreconciled-statuscard";
 import { TotalClientsCard } from "@/components/dashboard/total-clients-card";
@@ -28,6 +28,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
 interface Tenant {
   tenantId: string;
@@ -58,12 +59,12 @@ export default function Dashboard({ initialTenants }: { initialTenants: Tenant[]
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
-                  Building Your Application
+                  Overview
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -81,14 +82,18 @@ export default function Dashboard({ initialTenants }: { initialTenants: Tenant[]
           </div>
           <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
             {loading ? (
-              <p>Loading...</p>
+              <div className="col-span-full">
+                <LoadingSpinner />
+              </div>
             ) : error ? (
               <p>Error: {error.message}</p>
             ) : (
-              <BankTransactionsTable transactions={transactions} />
+              <>
+                <BankTransactionsTable transactions={transactions} />
+                <InvoicesPieChart />
+                {/* Other cards */}
+              </>
             )}
-            <InvoicesPieChart />
-            {/* Other cards */}
           </div>
         </main>
         <ErrorDialog />

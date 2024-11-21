@@ -1,61 +1,52 @@
+// components/dashboard/total-clients-card.tsx
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  CardFooter,
+  CardDescription,
 } from "@/components/ui/card";
 import { useContacts } from "@/components/hooks/use-contacts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
-import { ChartConfig } from "@/components/ui/chart";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
 export function TotalClientsCard() {
   const { contactsCount, activeClientsCount, suppliersCount, customersCount, loading, error } = useContacts();
 
-  const chartConfig = {
-    Active: {
-      label: "Active",
-      color: "var(--chart-1)"
-    },
-    Suppliers: {
-      label: "Suppliers",
-      color: "var(--chart-2)"
-    },
-    Customers: {
-      label: "Customers",
-      color: "var(--chart-3)"
-    }
-  } satisfies ChartConfig;
-
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="col-span-full"> <LoadingSpinner /> </div>;
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div className="text-red-500">Error: {error.message}</div>;
   }
 
   const chartData = [
     { name: "Active", Active: activeClientsCount },
     { name: "Suppliers", Suppliers: suppliersCount },
-    { name: "Customers", Customers: customersCount },
+    { name: "Customers", Customers: customersCount }
   ];
 
   return (
-    <Card>
-      <CardHeader className="items-center pb-0">
+    <Card className="bg-card text-card-foreground shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="items-center pb-0 px-6">
         <CardTitle>Total Clients: {contactsCount}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-1 items-center pb-0">
+      <CardContent className="flex flex-1 items-center pb-0 px-6">
         <BarChart width={300} height={200} data={chartData}>
           <XAxis dataKey="name" hide />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="Active" fill={chartConfig.Active.color} />
-          <Bar dataKey="Suppliers" fill={chartConfig.Suppliers.color} />
-          <Bar dataKey="Customers" fill={chartConfig.Customers.color} />
+          <Bar dataKey="Active" fill="var(--chart-1)" />
+          <Bar dataKey="Suppliers" fill="var(--chart-2)" />
+          <Bar dataKey="Customers" fill="var(--chart-3)" />
         </BarChart>
       </CardContent>
     </Card>
   );
 }
+
+export default TotalClientsCard;
